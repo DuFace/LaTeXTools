@@ -1,0 +1,6 @@
+Flexible reference commands:
+  ☐ Read a setting that can contain various \(\w+)ref or \cite(\w+) patterns
+    These won't actually be specified as a regex as above, but instead will be a list of characters/words that will be joined together to build the regex.
+
+  ☐ Modify the open brace command in the .sublime-keymap file
+    Anything in the regex above should be passed down to the command so that it can determine if it's valid or not.
