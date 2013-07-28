@@ -25,7 +25,8 @@ def match(rex, str):
 
 def get_additional_search_directories (view):
     try:
-        directories = view.settings().get('additional_bibtex_directories')
+        directories = [os.path.expandvars (d) for d in
+            view.settings ().get ('additional_bibtex_directories')]
         return [d for d in directories if os.path.exists (d)]
     except:
         return []
@@ -56,7 +57,7 @@ def find_bib_files(rootdir, src, bibfiles, bibdirs):
         src_file = open(file_path, "r")
     except IOError:
         sublime.status_message("LaTeXTools WARNING: cannot open included file " + file_path)
-        print "WARNING! I can't find it! Check your \\include's and \\input's." 
+        print "WARNING! I can't find it! Check your \\include's and \\input's."
         return
 
     src_content = re.sub("%.*","",src_file.read())
@@ -256,10 +257,10 @@ def get_cite_completions(view, point, autocompleting=False):
         years = []
         journals = []
         #
-        entry = {   "keyword": "", 
+        entry = {   "keyword": "",
                     "title": "",
-                    "author": "", 
-                    "year": "", 
+                    "author": "",
+                    "year": "",
                     "editor": "",
                     "journal": "",
                     "eprint": "" }
@@ -355,7 +356,7 @@ def get_cite_completions(view, point, autocompleting=False):
 # Based on html_completions.py
 # see also latex_ref_completions.py
 #
-# It expands citations; activated by 
+# It expands citations; activated by
 # cite<tab>
 # citep<tab> and friends
 #
@@ -363,7 +364,7 @@ def get_cite_completions(view, point, autocompleting=False):
 #
 # cite_sec
 #
-# to select all citation keywords starting with "sec". 
+# to select all citation keywords starting with "sec".
 #
 # There is only one problem: if you have a keyword "sec:intro", for instance,
 # doing "cite_intro:" will find it correctly, but when you insert it, this will be done
