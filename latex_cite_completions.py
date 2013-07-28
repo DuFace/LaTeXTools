@@ -23,10 +23,26 @@ def match(rex, str):
     else:
         return None
 
+def get_additional_search_directories (view):
+    try:
+        directories = view.settings().get('additional_bibtex_directories')
+        return [d for d in directories if os.path.exists (d)]
+    except:
+        return []
+
+def search_for_file (filename, directories):
+    for directory in directories:
+        full_path = os.path.normpath (os.path.join (directory, filename))
+        if os.path.isfile (full_path):
+            return full_path
+    else:
+        return filename
+
+
 # recursively search all linked tex files to find all
 # included bibliography tags in the document and extract
 # the absolute filepaths of the bib files
-def find_bib_files(rootdir, src, bibfiles):
+def find_bib_files(rootdir, src, bibfiles, bibdirs):
     if src[-4:].lower() != ".tex":
         src = src + ".tex"
 
@@ -69,13 +85,14 @@ def find_bib_files(rootdir, src, bibfiles):
             if bf[-4:].lower() != '.bib':
                 bf = bf + '.bib'
             # We join with rootdir - everything is off the dir of the master file
-            bf = os.path.normpath(os.path.join(rootdir,bf))
+            # bf = os.path.normpath(os.path.join(rootdir,bf))
+            bf = search_for_file (bf, bibdirs)
             bibfiles.append(bf)
 
     # search through input tex files recursively
     for f in re.findall(r'\\(?:input|include)\{[^\}]+\}',src_content):
         input_f = re.search(r'\{([^\}]+)', f).group(1)
-        find_bib_files(rootdir, input_f, bibfiles)
+        find_bib_files(rootdir, input_f, bibfiles, bibdirs)
 
 
 def get_cite_completions(view, point, autocompleting=False):
@@ -173,8 +190,10 @@ def get_cite_completions(view, point, autocompleting=False):
         raise NoBibFilesError()
 
     print "TEX root: " + repr(root)
+    root_dir  = os.path.dirname(root)
     bib_files = []
-    find_bib_files(os.path.dirname(root), root, bib_files)
+    bib_dirs  = [root_dir] + get_additional_search_directories (view)
+    find_bib_files(root_dir, root, bib_files, bib_dirs)
     # remove duplicate bib files
     bib_files = list(set(bib_files))
     print "Bib files found: ",
